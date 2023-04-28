@@ -15,11 +15,15 @@ enum PIECETYPE{
     QUEEN,
     KING
 };
+
 // Using enum here will return 0/1 depending on what color. White is 0, black is 1.
 enum PIECECOLOR{
     WHITE,
     BLACK
 };
+
+
+
 
 class Piece{
 public:
@@ -35,7 +39,7 @@ public:
         return type_;
     }
 
-    bool isValidMove(int start){
+    bool isValidMove(int endRank, int endFile){
 
     }
 

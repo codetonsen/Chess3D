@@ -5,14 +5,63 @@
 #ifndef CHESS3D_PAWN_H
 #define CHESS3D_PAWN_H
 #include <iostream>
+#include <vector>
 #include "piece.h"
+
 class Pawn : public Piece {
 public:
-    Pawn(std::string color) : Piece(color) {
-        color_ = color;
+    Pawn(PIECECOLOR color, int rank, int file) : Piece(color, PIECETYPE::PAWN) {
+        std::cout << "CREATED PAWN at position(x,y): " << rank << " " << file << std::endl;
+        rank_ = rank;
+        file_ = file;
     }
-private:
-    std::string color_;
+    void move(int endRank, int endFile) {
+        if (isValidMove(endRank, endFile)) {
+            rank_ = endRank;
+            file_ = endFile;
+        }
+    }
 
+    std::pair<int, int> getPos(){
+        std::pair<int, int> position;
+        position.first = rank_;
+        position.second = file_;
+        return position;
+    }
+
+    bool isValidMove(int endRank, int endFile) {
+        if(endRank > 8 or endFile > 8) {
+            return false; // Returns false because out of bounds
+        };
+        int deltaRank = rank_ - endRank;
+        int deltaFile = file_ - endFile;
+
+        // ONE FORWARD
+        if (deltaRank == 0 and deltaFile == -1) {
+            hasMoved_ = true;
+            return true;
+        }
+        // TWO FORWARD
+        if (!hasMoved_) {
+            if (deltaRank == 0 and deltaFile == -2) {
+                return true;
+            }
+        }
+
+        //ATTACK
+        if (abs(deltaRank) == 1 and deltaFile == -1) {
+            hasMoved_ = true;
+            return true;
+        }
+
+        //TODO: EN PEASSANT
+
+
+    }
+
+private:
+    bool hasMoved_ = false;
+    int rank_;
+    int file_;
 };
 #endif //CHESS3D_PAWN_H
