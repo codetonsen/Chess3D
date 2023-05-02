@@ -31,14 +31,8 @@ public:
         return board_[position.first][position.second];
     }
 
-    void printBoard(){
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if (board_[i][j] != nullptr){
-                    std::cout << board_[i][j]->getType() << std::endl;
-                }
-            }
-        }
+    std::shared_ptr<Piece> (*getBoard())[8] {
+        return board_;
     }
 
     // SET
@@ -128,6 +122,7 @@ public:
         auto FEM = reader.readFile(path);
         for (auto piece : FEM) {
             std::cout << "Piece type: " << piece.first.first << ", color: " << piece.first.second << ", position: (" << piece.second.first << ", " << piece.second.second << ")" << std::endl;
+            addPiece(piece.first, piece.second);
         }
 
 
