@@ -29,6 +29,7 @@ class Piece{
 public:
     Piece(PIECECOLOR color, PIECETYPE type){
         color_ = color;
+        type_ = type;
     }
 
     // GETTERS
@@ -36,7 +37,9 @@ public:
         return color_;
     }
     PIECETYPE getType(){
+
         return type_;
+
     }
 
     bool isValidMove(int endRank, int endFile){

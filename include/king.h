@@ -23,7 +23,6 @@ public:
             // Run a method at board class
         }
     }
-
     std::pair<int, int> getPos(){
         std::pair<int, int> position;
         position.first = rank_;
