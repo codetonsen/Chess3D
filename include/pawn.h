@@ -31,28 +31,33 @@ public:
 
     bool isValidMove(int endRank, int endFile) {
         if(endRank > 8 or endFile > 8) {
+            std::cout << "out of bounds \n";
             return false; // Returns false because out of bounds
         };
         int deltaRank = rank_ - endRank;
         int deltaFile = file_ - endFile;
 
+        //std::cout << "deltaRank: " << deltaRank << "deltaFile: " << deltaFile << std::endl;
         // ONE FORWARD
         if (deltaRank == 0 and deltaFile == -1) {
             hasMoved_ = true;
             return true;
         }
         // TWO FORWARD
-        if (!hasMoved_) {
+        if (getColor() == PIECECOLOR::WHITE and file_ == 1) {
             if (deltaRank == 0 and deltaFile == -2) {
                 return true;
             }
         }
 
         //ATTACK
+
         if (abs(deltaRank) == 1 and deltaFile == -1) {
             hasMoved_ = true;
             return true;
         }
+
+
 
         //TODO: EN PEASSANT
 
@@ -61,7 +66,7 @@ public:
 
 private:
     bool hasMoved_ = false;
-    int rank_;
-    int file_;
+    int rank_ = 0;
+    int file_ = 0;
 };
 #endif //CHESS3D_PAWN_H

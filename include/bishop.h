@@ -38,10 +38,9 @@ public:
 
         // Check for diagonal moves
         if (abs(rank_ - endRank) == abs(file_ - endFile)) {
-
+            std::cout << "bishop" << std::endl;
             return true;
         }
-
 
 
     }

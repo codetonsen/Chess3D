@@ -46,7 +46,33 @@ public:
     void move(int rank, int file, int endRank, int endFile) {
         auto curPiece = getPiece(std::make_pair(rank, file));
         std::cout << curPiece->isValidMove(endRank, endFile) << std::endl;
+        if (curPiece->isValidMove(endRank,endFile)) {
 
+        }
+
+    }
+
+    std::vector<std::pair<int,int>> slidingPieceBlock(int rank, int file, int endRank, int endFile){
+        std::pair<int,int> startPos = std::make_pair(rank, file);
+        auto curPiece = getPiece(startPos);
+        PIECETYPE type = curPiece->getType();
+
+        std::vector<std::pair<int,int>> validMoves;
+
+        switch (type) {
+            case PIECETYPE::BISHOP:
+                for (int i = rank; i<8;i++) {
+                    for (int j = file; j<8; j++) {
+                        // x+n, y+n
+                        if (board_[i][j] == nullptr) {
+
+                        }
+                    }
+                }
+
+                break;
+
+        }
     }
 
     void addPiece(std::pair<PIECETYPE, PIECECOLOR> info, std::pair<int, int> position) {
@@ -81,7 +107,7 @@ public:
         auto curPiece = getPiece(position);
         std::vector<std::pair<int, int>> piecePositions;
         std::vector<std::pair<int, int>> enemyPositions;
-        std::cout << "Checking for all valid moves" << std::endl;
+        std::cout << "Checking for all valid moves for piece at: "<< position.first << " " << position.second << std::endl;
 
         // Loops through board to get a list of coordinates where all pieces are.
         for (int file = 0; file < 8; file++) {
@@ -96,13 +122,23 @@ public:
             }
         }
         piecePositions_ = piecePositions;
+
         int count = 1;
         for (int file = 0; file < 8; file++) {
             for (int rank = 0; rank < 8; rank++) {
-                if (curPiece->isValidMove(rank, file)) {
 
-                    std::cout << "valid move at " << rank << ", " << file << std::endl;
+                if (curPiece->isValidMove(rank, file)) {
+                    // This will only work for non -sliding pieces, because sliding pieces need to ble blocked after sight
+
+                    if (board_[rank][file] == nullptr) {
+                        std::cout << "valid move at " << rank << ", " << file << std::endl;
+
+                    } else {
+                        std::cout << "blocked" << std::endl;
+
+                    }
                 } else {
+
                     //std::cout << count << std::endl;
                     //std::cout << "NOT valid move at" << rank << ", " << file << std::endl;
                     count++;

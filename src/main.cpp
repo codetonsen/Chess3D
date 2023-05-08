@@ -95,53 +95,40 @@ int main(){
 
 using namespace threepp;
 
-// Took this mouse listener struct from the example at https://github.com/markaren/threepp/blob/master/examples/misc/mouse_listener.cpp
-namespace {
-
-    struct MyListener: MouseListener {
-
-        float& t;
-
-        explicit MyListener(float& t): t(t) {}
-
-        void onMouseDown(int button, const Vector2& pos) override {
-            std::cout << "onMouseDown, button= " << button << ", pos=" << pos << " at t=" << t << std::endl;
-
-        }
-
-        void onMouseUp(int button, const Vector2& pos) override {
-            std::cout << "onMouseUp, button= " << button << ", pos=" << pos << " at t=" << t << std::endl;
-        }
-
-        void onMouseMove(const Vector2& pos) override {
-            std::cout << "onMouseMove, "
-                      << "pos=" << pos << " at t=" << t << std::endl;
-        }
-
-        void onMouseWheel(const Vector2& delta) override {
-            std::cout << "onMouseWheel, "
-                      << "delta=" << delta << " at t=" << t << std::endl;
-        }
-    };
-
-}
 
 
 
 
 int main() {
 
+    // For now im using a global variable for "Selected object"
+    Object3D* selected;
+
     Board board;
     board.initializeWithFEM("/Users/mac_m2/CLionProjects/AIS1002/Chess3D_old/data/games/startPosition.txt");
+
 
 
     Canvas canvas;
     GLRenderer renderer{canvas};
 
     // Mouse listener
-    float t = 0;
-    MyListener l{t};
+    Vector2 mouse{-Infinity<float>, -Infinity<float>};
+    MouseMoveListener l([&](Vector2 pos) {
+        // calculate mouse position in normalized device coordinates
+        // (-1 to +1) for both components
+
+        auto size = canvas.getSize();
+        mouse.x = (pos.x / static_cast<float>(size.width)) * 2 - 1;
+        mouse.y = -(pos.y / static_cast<float>(size.height)) * 2 + 1;
+
+    });
+
+
+
     canvas.addMouseListener(&l);
+
+
 
 
 
@@ -156,7 +143,8 @@ int main() {
 
 
 
-
+    std::pair<int, int> testPos = {0, 1};
+    auto validMoves = board.getAllPieceMoves(testPos);
 
 
     //auto light = HemisphereLight::create();
@@ -168,6 +156,7 @@ int main() {
         for (int rank = 0; rank<8; rank++) {
             auto planeGeometry = PlaneGeometry::create(1,1);
             auto planeMaterial = MeshBasicMaterial::create();
+
             if ((file+rank) % 2) {
                 planeMaterial->color.setRGB(0,0,0);
             } else {
@@ -183,8 +172,22 @@ int main() {
 
     // Imports the correct assets and places them appropriatly at the board
     // TODO: Make a function that can do this after each move
-    auto myBoard = board.getBoard();
 
+
+    auto myBoard = board.getBoard();
+    /*
+    auto getPOSs =  myBoard[0][1]->getPos();
+    std::cout << myBoard[0][2]->isValidMove(0,2) << std::endl;
+    std::cout << "This is what the piece thinks: " << getPOSs.first << " " << getPOSs.second << std::endl;
+    {
+        auto getPOSs =  myBoard[1][1]->getPos();
+        std::cout << "This is what the piece thinks: " << getPOSs.first << " " << getPOSs.second << std::endl;
+    }
+    {
+        auto getPOSs =  myBoard[2][0]->getPos();
+        std::cout << "This is what the piece thinks: " << getPOSs.first << " " << getPOSs.second << std::endl;
+    }
+    */
 
     // LIGHTING
     auto light2 = SpotLight::create(Color::teal);
@@ -247,15 +250,7 @@ int main() {
 
                     pieceModel->position.set(i - 3.5, 0, j - 3.5);
                     pieceModel->scale.set(0.4, 0.4, 0.4);
-                    /* //Materials for black and white, but i need to know more techinalities about this before implementing
-                    auto material = MeshBasicMaterial::create();
-                    if (myBoard[i][j]->getColor() == PIECECOLOR::WHITE) {
-                        material->color.setRGB(255,255,255);
-                    } else {
-                        material->color.setRGB(165,42,42);
-                    }
-                    auto firstMaterial = pieceModel.get()->material();
-                    */
+
                     scene->add(pieceModel);
                 }
             }
@@ -263,23 +258,25 @@ int main() {
         }
     }
 
-
-
-
-
-
-
-
-
     canvas.onWindowResize([&](WindowSize size) {
         camera->aspect = size.getAspect();
         camera->updateProjectionMatrix();
         renderer.setSize(size);
     });
 
-    canvas.animate([&](float dt) {
 
-        t+=dt;
+    Raycaster raycaster;
+
+
+    canvas.animate([&](float dt) {
+        raycaster.setFromCamera(mouse,camera);
+        auto intersects = raycaster.intersectObjects(scene->children);
+        if (!intersects.empty()) {
+            auto& intersected = intersects.front();
+            selected = intersected.object;
+            selected->position.setY(2);
+        }
+
         renderer.render(scene, camera);
     });
 }

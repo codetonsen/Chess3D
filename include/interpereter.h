@@ -11,6 +11,17 @@
 #include <piece.h>
 #include <vector>
 #include <fstream>
+#include <array>
+/*
+// en passant is true if a pawn has just moved 2 squares forward, does not take if its possible to capture piece into consideration
+bool isEnpassant = false;
+// Casteling
+// KQ - White can castle Queen and King side
+// kq - Black can castle Queen and King side
+std::array<int, 4> castle = {0,0,0,0};
+
+char nextMove;
+*/
 class Interpereter{
 public:
     Interpereter(){
@@ -39,9 +50,10 @@ public:
 
         std::vector<std::pair<std::pair<PIECETYPE, PIECECOLOR>, std::pair<int, int>>> piecePositions; // Initialize the vector to store the piece positions
 
-
+        int count = 0;
         int rank = 8, file = 1;
         for (char c : inputFEM) {
+            count++;
             if (isdigit(c)) { // If the character is a digit, skip that many squares
                 file += c - '0';
             }
@@ -74,6 +86,28 @@ public:
                 file++;
             }
         }
+
+
+
+        /*
+         * TODO: make interpereter know whos next move, if castling is avaliable and en passant.
+        while (count < inputFEM.size()) {
+            char curChar = inputFEM[count];
+            if (curChar == 'w') {
+                nextMove = 'w';
+            } else if (curChar == 'b') {
+                nextMove = 'b';
+            }
+
+            if (curChar == '-') {
+                isEnpassant = '-';
+            }
+
+
+            count++;
+        }*/
+
+
         return piecePositions;
 
 

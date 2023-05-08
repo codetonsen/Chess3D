@@ -41,10 +41,9 @@ public:
         return type_;
 
     }
+    virtual std::pair<int, int> getPos() = 0;
 
-    bool isValidMove(int endRank, int endFile){
-
-    }
+    virtual bool isValidMove(int endRank, int endFile) = 0;
 
 private:
     PIECECOLOR color_;
