@@ -8,6 +8,7 @@
 #endif //CHESS3D_BISHOP_H
 
 #include "piece.h"
+
 class Bishop : public Piece {
 public:
     Bishop(PIECECOLOR color, int rank, int file) : Piece(color, PIECETYPE::BISHOP) {
@@ -39,8 +40,13 @@ public:
         // Check for diagonal moves
         if (abs(rank_ - endRank) == abs(file_ - endFile)) {
             std::cout << "bishop" << std::endl;
+
+            //TODO check for collision
+
+
             return true;
         }
+
 
 
     }

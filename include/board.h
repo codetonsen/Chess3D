@@ -102,6 +102,18 @@ public:
         }
     }
 
+    void capturePiece(std::pair<int,int> position) {
+        auto capturedPiece = getPiece(position);
+        board_[position.first][position.second] = nullptr;
+        capturedPiece.reset();
+        std::cout << "captured piece" << std::endl;
+
+        // Graphics
+
+    }
+
+
+
     std::vector<std::pair<int, int>> getAllPieceMoves(std::pair<int, int> position) {
 
         auto curPiece = getPiece(position);
@@ -128,14 +140,20 @@ public:
             for (int rank = 0; rank < 8; rank++) {
 
                 if (curPiece->isValidMove(rank, file)) {
-                    // This will only work for non -sliding pieces, because sliding pieces need to ble blocked after sight
+                    // This will only work for non-sliding pieces, because sliding pieces need to ble blocked after sight
 
                     if (board_[rank][file] == nullptr) {
                         std::cout << "valid move at " << rank << ", " << file << std::endl;
 
                     } else {
                         std::cout << "blocked" << std::endl;
-
+                        //TODO COLLISION
+                        //Bishop
+                        for (int i = 0; i < 8; i++) {
+                            for (int j = 0; j<8; j++) {
+                                // Here I need to check if the move pattern is blocked by a piece
+                            }
+                        }
                     }
                 } else {
 
