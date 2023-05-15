@@ -95,21 +95,38 @@ int main(){
 // GRAPHICS
 
 
-
-
+bool chosenPiece = false;
+bool startSelect = false;
 using namespace threepp;
 
-/*
 namespace {
-    struct MyListener:MouseListener {
+    struct MyListener: MouseListener {
         float &t;
-        explicit MyListener(float& t): t(t) {}
+        explicit MyListener(float &t) : t(t) {}
 
         void onMouseDown(int button, const Vector2& pos) override {
             std::cout << "onMouseDown, button= " << button << ", pos=" << pos << " at t=" << t << std::endl;
         }
+
+        void onMouseUp(int button, const Vector2& pos) override {
+            if(button == 0){
+                startSelect = true;
+            }
+
+
+            std::cout << "onMouseUp, button= " << button << ", pos=" << pos << " at t=" << t << std::endl;
+        }
+
+        void onMouseMove(const Vector2& pos) override {
+            //std::cout << "onMouseMove, " << "pos=" << pos << " at t=" << t << std::endl;
+        }
+
+        void onMouseWheel(const Vector2& delta) override {
+            std::cout << "onMouseWheel, " << "delta=" << delta << " at t=" << t << std::endl;
+        }
     };
-}*/
+
+}
 
 int main() {
 
@@ -124,21 +141,26 @@ int main() {
     Canvas canvas;
     GLRenderer renderer{canvas};
 
-    // Mouse listener
-    Vector2 mouse{-Infinity<float>, -Infinity<float>};
-    MouseMoveListener l([&](Vector2 pos) {
-        // calculate mouse position in normalized device coordinates
-        // (-1 to +1) for both components
 
+    // Mouse listener to normalize input
+    Vector2 mouse{-Infinity<float>, -Infinity<float>};
+    MouseMoveListener mouseListener([&](auto &pos) {
         auto size = canvas.getSize();
         mouse.x = (pos.x / static_cast<float>(size.width)) * 2 - 1;
         mouse.y = -(pos.y / static_cast<float>(size.height)) * 2 + 1;
     });
 
+    float t = 0;
+    MyListener l{t};
+
     canvas.addMouseListener(&l);
+    canvas.addMouseListener(&mouseListener);
 
 
-    Clock clock;
+
+
+
+
 
 
 
@@ -163,8 +185,7 @@ int main() {
     }
     */
 
-    std::pair<int, int> testPos = {0, 1};
-    auto validMoves = board.getAllPieceMoves(testPos);
+
 
 
     //auto light = HemisphereLight::create();
@@ -233,40 +254,7 @@ int main() {
                 auto color = myBoard[i][j]->getColor();
                 auto position = std::make_pair(i, j);
                 graphics.addPiece(position, type, color, loader);
-                /*
-                std::shared_ptr<threepp::Object3D> pieceModel;
 
-                // Switches once again between the different types, to load the spesific path to the 3d-model
-                switch (type) {
-                    case PIECETYPE::PAWN:
-                        pieceModel = loader.load("models/Pawn.obj");
-                        break;
-                    case PIECETYPE::KING:
-                        pieceModel = loader.load("models/Pawn.obj");
-                        break;
-                    case PIECETYPE::QUEEN:
-                        pieceModel = loader.load("models/Queen.obj");
-                        break;
-                    case PIECETYPE::ROOK:
-                        pieceModel = loader.load("models/Rook.obj");
-                        break;
-                    case PIECETYPE::KNIGHT:
-                        pieceModel = loader.load("models/Knight.obj");
-                        break;
-                    case PIECETYPE::BISHOP:
-                        pieceModel = loader.load("models/Bishop.obj");
-                        break;
-                    default:
-                        break;
-                }
-
-                if (pieceModel) {
-
-                    pieceModel->position.set(i - 3.5, 0, j - 3.5);
-                    pieceModel->scale.set(0.4, 0.4, 0.4);
-
-                    scene->add(pieceModel);
-                }*/
             }
 
         }
@@ -282,50 +270,91 @@ int main() {
 
     Raycaster raycaster;
 
-    /*
-    auto testGeometry = BoxGeometry::create(1,1,1);
-    auto testMaterial = MeshBasicMaterial::create();
-    testMaterial->color.setRGB(255,150,150);
-    auto testMesh = Mesh::create(testGeometry,testMaterial);
-    testMesh->name = "test";
-    scene->add(testMesh);
-    auto testReturn = scene.get()->getObjectByName("test");
-    scene->remove(testReturn);
-    */
 
-    graphics.addPiece({6,4}, PIECETYPE::BISHOP, PIECECOLOR::WHITE, loader);
-    graphics.removePiece({6,4});
+    std::pair<int, int> selectedPosition;
 
     canvas.animate([&](float dt) {
 
-        raycaster.setFromCamera(mouse,camera);
-        auto intersects = raycaster.intersectObjects(scene->children);
-        if (!intersects.empty()) {
-            auto& intersected = intersects.front();
-            selected = intersected.object;
+        // MouseDown triggers raycast event
+        if (chosenPiece) {
+            if (startSelect) {
+                raycaster.setFromCamera(mouse, camera);
+                auto intersects = raycaster.intersectObjects(scene->children);
+                if (!intersects.empty()) {
+                    auto &intersected = intersects.front();
+                    selected = intersected.object;
 
-            auto position = selected->position;
-            float file = position[0];
-            float rank = position[2];
-            std::cout << "file and rank " << file << " " << rank << std::endl;
-            file = file + 3.5;
-            rank = rank + 3.5;
-            std::cout << "hovering over x,y: " << file << " " << rank << std::endl;
-            // This file and rank is the position on the global coordinate system.
-            // To change it to the boards coordinate system I need to convert them
+                    auto position = selected->position;
+                    float file = position[0];
+                    float rank = position[2];
+                    file = file + 3.5;
+                    rank = rank + 3.5;
+                    std::cout << "In the chosen Piece now hovering over x,y: " << file << " " << rank << std::endl;
 
 
+                    auto boardPosition = std::make_pair(int(file), int(rank));
 
-            auto boardPosition = std::make_pair(int(file), int(rank));
 
-            if(myBoard[int(file)][int(rank)]) {
-                board.capturePiece(boardPosition);
-                graphics.removePiece(boardPosition);
+                    auto validMoves = board.getAllPieceMoves(selectedPosition);
+                    for (auto move : validMoves) {
+                        if (move == boardPosition) {
+                            graphics.removePiece(selectedPosition);
+                            auto curPiece = myBoard[selectedPosition.first][selectedPosition.second];
+                            graphics.removePiece(selectedPosition);
+                            graphics.addPiece(boardPosition, curPiece->getType(), curPiece->getColor(), loader);
+                            board.move(selectedPosition.first, selectedPosition.second, boardPosition.first, boardPosition.second);
+
+
+                        }
+                    }
+                    chosenPiece = false;
+                }
+
             }
 
-            // scene->remove->modelAtPosition
         }
+        if (startSelect) {
 
+            raycaster.setFromCamera(mouse, camera);
+            auto intersects = raycaster.intersectObjects(scene->children);
+            if (!intersects.empty()) {
+                auto &intersected = intersects.front();
+                selected = intersected.object;
+
+                auto position = selected->position;
+                float file = position[0];
+                float rank = position[2];
+                file = file + 3.5;
+                rank = rank + 3.5;
+                std::cout << "hovering over x,y: " << file << " " << rank << std::endl;
+
+
+                auto boardPosition = std::make_pair(int(file), int(rank));
+
+
+                // This just removes pieces graphically and in the board object.
+                if (myBoard[int(file)][int(rank)]) {
+                    // Checks for all valid moves, and shows them graphically
+                    selectedPosition = boardPosition;
+                    auto validMoves = board.getAllPieceMoves(boardPosition);
+                    auto validMovesGroup = Group::create();
+                    for(auto i : validMoves) {
+                        auto validMoveGeo = BoxGeometry::create(0.5,0.5,0.5);
+                        auto validMoveMaterial = MeshBasicMaterial::create();
+                        validMoveMaterial->color.setRGB(124,252,0);
+                        auto validMoveMesh = Mesh::create(validMoveGeo, validMoveMaterial);
+                        validMoveMesh->position.set(i.first-3.5,1.5,i.second-3.5);
+                        validMovesGroup->add(validMoveMesh);
+                    }
+                    scene->add(validMovesGroup);
+                    chosenPiece = true;
+
+                }
+
+
+            }
+            startSelect = false;
+        }
         renderer.render(scene, camera);
     });
 }

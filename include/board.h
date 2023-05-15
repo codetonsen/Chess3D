@@ -115,7 +115,7 @@ public:
 
 
     std::vector<std::pair<int, int>> getAllPieceMoves(std::pair<int, int> position) {
-
+        std::vector<std::pair<int, int>> validMoves;
         auto curPiece = getPiece(position);
         std::vector<std::pair<int, int>> piecePositions;
         std::vector<std::pair<int, int>> enemyPositions;
@@ -144,7 +144,7 @@ public:
 
                     if (board_[rank][file] == nullptr) {
                         std::cout << "valid move at " << rank << ", " << file << std::endl;
-
+                        validMoves.emplace_back(std::make_pair(rank,file));
                     } else {
                         std::cout << "blocked" << std::endl;
                         //TODO COLLISION
@@ -168,7 +168,7 @@ public:
 
 
 
-        return piecePositions;
+        return validMoves;
     }
 
     void initializeWithFEM(std::string path){
