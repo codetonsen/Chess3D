@@ -98,7 +98,28 @@ public:
         positions[position.first][position.second] = empty;
 
     }
-    void movePiece(std::pair<int, int> start, std::pair<int, int> end) {
+    void movePiece(std::pair<int, int> start, std::pair<int, int> end, PIECETYPE type, PIECECOLOR color, OBJLoader loader) {
+        removePiece(start);
+        addPiece(end, type, color, loader);
+    }
+
+
+    void showValidMoves(std::vector<std::pair<int, int>> validMoves) {
+        for (auto pos : validMoves) {
+            auto validMoveGeo = BoxGeometry::create(0.5,0.5,0.5);
+            auto validMoveMaterial = MeshBasicMaterial::create();
+            validMoveMaterial->color.setRGB(124,252,0);
+            auto validMoveMesh = Mesh::create(validMoveGeo, validMoveMaterial);
+            validMoveMesh->position.set(pos.first-3.5,1,pos.second-3.5);
+            validMoveMesh->name = "validMove";
+            validMoveObjects.emplace_back(validMoveMesh);
+            scene_->add(validMoveMesh);
+        }
+    }
+    void removeValidMoves() {
+        for (auto obj : validMoveObjects) {
+            scene_->remove(obj);
+        }
 
     }
 
@@ -106,5 +127,6 @@ private:
     std::pair<std::pair<int, int>, std::string> positions[8][8];
     std::shared_ptr<Scene> scene_;
     std::shared_ptr<Board> board_;
+    std::vector<std::shared_ptr<Object3D>> validMoveObjects;
     float pieceScale = 0.4;
 };

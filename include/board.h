@@ -46,9 +46,11 @@ public:
     void move(int rank, int file, int endRank, int endFile) {
         auto curPiece = getPiece(std::make_pair(rank, file));
         std::cout << curPiece->isValidMove(endRank, endFile) << std::endl;
-        if (curPiece->isValidMove(endRank,endFile)) {
-
-        }
+        auto temp = board_[rank][file];
+        board_[rank][file] = nullptr;
+        board_[endRank][endFile] = temp;
+        std::cout << "moved Piece from xy: " << rank << " " << file;
+        std::cout << " to " << endRank << " " << endFile << std::endl;
 
     }
 

@@ -121,9 +121,7 @@ namespace {
             //std::cout << "onMouseMove, " << "pos=" << pos << " at t=" << t << std::endl;
         }
 
-        void onMouseWheel(const Vector2& delta) override {
-            std::cout << "onMouseWheel, " << "delta=" << delta << " at t=" << t << std::endl;
-        }
+        void onMouseWheel(const Vector2& delta) override {}
     };
 
 }
@@ -216,7 +214,7 @@ int main() {
     // TODO: Make a function that can do this after each move
 
 
-    auto myBoard = board.getBoard();
+    auto startBoard = board.getBoard();
 
 
     // LIGHTING
@@ -248,10 +246,10 @@ int main() {
     auto pieces = Group::create();
     for(int i = 0; i<8; i++) {
         for (int j = 0; j<8; j++) {
-            if (myBoard[i][j]) {
+            if (startBoard[i][j]) {
 
-                auto type = myBoard[i][j]->getType();
-                auto color = myBoard[i][j]->getColor();
+                auto type = startBoard[i][j]->getType();
+                auto color = startBoard[i][j]->getColor();
                 auto position = std::make_pair(i, j);
                 graphics.addPiece(position, type, color, loader);
 
@@ -274,44 +272,55 @@ int main() {
     std::pair<int, int> selectedPosition;
 
     canvas.animate([&](float dt) {
-
+        auto myBoard = board.getBoard();
         // MouseDown triggers raycast event
-        if (chosenPiece) {
-            if (startSelect) {
-                raycaster.setFromCamera(mouse, camera);
-                auto intersects = raycaster.intersectObjects(scene->children);
-                if (!intersects.empty()) {
-                    auto &intersected = intersects.front();
-                    selected = intersected.object;
-
-                    auto position = selected->position;
-                    float file = position[0];
-                    float rank = position[2];
-                    file = file + 3.5;
-                    rank = rank + 3.5;
-                    std::cout << "In the chosen Piece now hovering over x,y: " << file << " " << rank << std::endl;
 
 
-                    auto boardPosition = std::make_pair(int(file), int(rank));
+        if (selectedPosition.first != -1) {
 
 
-                    auto validMoves = board.getAllPieceMoves(selectedPosition);
-                    for (auto move : validMoves) {
-                        if (move == boardPosition) {
-                            graphics.removePiece(selectedPosition);
-                            auto curPiece = myBoard[selectedPosition.first][selectedPosition.second];
-                            graphics.removePiece(selectedPosition);
-                            graphics.addPiece(boardPosition, curPiece->getType(), curPiece->getColor(), loader);
-                            board.move(selectedPosition.first, selectedPosition.second, boardPosition.first, boardPosition.second);
+            if (chosenPiece) {
+                if (startSelect) {
+                    raycaster.setFromCamera(mouse, camera);
+                    auto intersects = raycaster.intersectObjects(scene->children);
+                    if (!intersects.empty()) {
+                        auto &intersected = intersects.front();
+                        selected = intersected.object;
+
+                        auto position = selected->position;
+                        float file = position[0];
+                        float rank = position[2];
+                        file = file + 3.5;
+                        rank = rank + 3.5;
+                        std::cout << "In the chosen Piece now hovering over x,y: " << file << " " << rank << std::endl;
 
 
+                        auto boardPosition = std::make_pair(int(file), int(rank));
+
+
+                        auto validMoves = board.getAllPieceMoves(selectedPosition);
+                        for (auto move: validMoves) {
+                            if (move == boardPosition) {
+
+                                auto curPiece = myBoard[selectedPosition.first][selectedPosition.second];
+
+                                graphics.removeValidMoves();
+                                graphics.movePiece(selectedPosition, boardPosition, curPiece->getType(),
+                                                   curPiece->getColor(), loader);
+                                //graphics.addPiece(boardPosition, curPiece->getType(), curPiece->getColor(), loader);
+                                board.move(selectedPosition.first, selectedPosition.second, boardPosition.first,
+                                           boardPosition.second);
+
+                                selectedPosition = {-1,-1};
+                            }
                         }
+                        chosenPiece = false;
+
                     }
-                    chosenPiece = false;
+
                 }
 
             }
-
         }
         if (startSelect) {
 
@@ -338,6 +347,8 @@ int main() {
                     selectedPosition = boardPosition;
                     auto validMoves = board.getAllPieceMoves(boardPosition);
                     auto validMovesGroup = Group::create();
+                    graphics.showValidMoves(validMoves);
+                    /*
                     for(auto i : validMoves) {
                         auto validMoveGeo = BoxGeometry::create(0.5,0.5,0.5);
                         auto validMoveMaterial = MeshBasicMaterial::create();
@@ -346,13 +357,15 @@ int main() {
                         validMoveMesh->position.set(i.first-3.5,1.5,i.second-3.5);
                         validMovesGroup->add(validMoveMesh);
                     }
-                    scene->add(validMovesGroup);
+                    scene->add(validMovesGroup);*/
+
                     chosenPiece = true;
 
                 }
 
 
             }
+
             startSelect = false;
         }
         renderer.render(scene, camera);
